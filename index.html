@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cobalt Chloride Equilibrium Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* Layout: sticky lab bench on the left, exam booklet on the right; stacks on narrow screens.
+   Palette: cobalt blue (the [CoCl4]2- ion) and hexaaqua pink, on a cool paper grey. */
+:root{
+  --paper:#f3f5f9;
+  --sheet:#ffffff;
+  --ink:#16203a;
+  --muted:#5a6580;
+  --rule:#d8deea;
+  --cobalt:#2448c9;
+  --cobalt-soft:#e6ecff;
+  --pink:#c23f7c;
+  --pink-soft:#fbe8f1;
+  --good:#1d7a4f;
+  --warn:#a35d00;
+  --font-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0f1424; --sheet:#171e33; --ink:#e8ecf7; --muted:#9aa5c2; --rule:#2b3552;
+    --cobalt:#7d9bff; --cobalt-soft:#1f2a4f; --pink:#f08ab9; --pink-soft:#3a1f30;
+    --good:#5fd39b; --warn:#f0b35a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0f1424; --sheet:#171e33; --ink:#e8ecf7; --muted:#9aa5c2; --rule:#2b3552;
+  --cobalt:#7d9bff; --cobalt-soft:#1f2a4f; --pink:#f08ab9; --pink-soft:#3a1f30;
+  --good:#5fd39b; --warn:#f0b35a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:15.5px;line-height:1.55}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.15}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--cobalt);outline-offset:2px}
+sub,sup{line-height:0}
+
+/* Header */
+.top{background:var(--sheet);border-bottom:1px solid var(--rule)}
+.top-inner{max-width:1360px;margin:0 auto;padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between}
+.brand{display:flex;flex-direction:column;gap:2px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.brand h1{font-size:24px}
+.meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.field-inline{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--muted)}
+.field-inline input{border:1px solid var(--rule);background:var(--paper);border-radius:6px;padding:6px 10px;min-width:180px}
+.chip{font-size:13px;border:1px solid var(--rule);border-radius:999px;padding:4px 12px;background:var(--paper);white-space:nowrap}
+.chip strong{font-family:var(--font-mono);font-weight:500}
+.timer{font-family:var(--font-mono)}
+.timer.low{color:var(--warn);border-color:var(--warn)}
+
+/* Main grid */
+.wrap{max-width:1360px;margin:0 auto;padding:20px;display:grid;grid-template-columns:minmax(340px,440px) 1fr;gap:20px;align-items:start}
+@media (max-width:980px){.wrap{grid-template-columns:1fr}}
+.panel{background:var(--sheet);border:1px solid var(--rule);border-radius:10px}
+.bench{position:sticky;top:12px;padding:18px;display:flex;flex-direction:column;gap:14px;max-height:calc(100vh - 24px);overflow:auto}
+@media (max-width:980px){.bench{position:static;max-height:none}}
+.bench h2{font-size:19px}
+.small{font-size:13px;color:var(--muted)}
+
+/* Apparatus */
+.apparatus{display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:center}
+.bath{position:relative;height:170px;border:2px solid var(--rule);border-top:none;border-radius:0 0 14px 14px;background:linear-gradient(to top,var(--cobalt-soft),transparent 85%);display:flex;justify-content:center;align-items:flex-end;padding-bottom:10px}
+.bath .label{position:absolute;top:4px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted)}
+.tube{width:34px;height:130px;border:2px solid var(--muted);border-top:none;border-radius:0 0 17px 17px;position:relative;overflow:hidden;background:transparent}
+.tube .liquid{position:absolute;left:0;right:0;bottom:0;height:78%;transition:background-color .4s linear}
+.readouts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.readout{border:1px solid var(--rule);border-radius:8px;padding:8px 10px;background:var(--paper)}
+.readout .k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.readout .v{font-family:var(--font-mono);font-size:22px;font-variant-numeric:tabular-nums}
+.readout .u{font-size:12px;color:var(--muted)}
+.readout.lcd{background:#0d1a12;border-color:#24402e}
+.readout.lcd .k{color:#83b897}
+.readout.lcd .v{color:#7dffa8}
+.readout.lcd .u{color:#83b897}
+
+.controls{display:flex;flex-direction:column;gap:10px}
+.ctrl label{display:flex;justify-content:space-between;font-size:14px;font-weight:500}
+.ctrl label span{font-family:var(--font-mono);font-weight:400;color:var(--muted)}
+.ctrl input[type=range]{width:100%;accent-color:var(--cobalt)}
+.ctrl select{width:100%;border:1px solid var(--rule);border-radius:6px;padding:7px 8px;background:var(--sheet)}
+.fixed{font-size:13px;color:var(--muted);border-left:3px solid var(--rule);padding-left:10px}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--rule);background:var(--sheet);border-radius:7px;padding:8px 14px;cursor:pointer;font-weight:500;font-size:14px}
+.btn:hover{border-color:var(--cobalt)}
+.btn.primary{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+:root[data-theme="dark"] .btn.primary{color:#0f1424}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{color:#0f1424}}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.clock{font-family:var(--font-mono);font-size:13px;color:var(--muted)}
+.log{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.log th,.log td{border-bottom:1px solid var(--rule);padding:4px 6px;text-align:right}
+.log th{font-weight:600;color:var(--muted);font-size:12px}
+.log td:first-child,.log th:first-child{text-align:left}
+.logbox{max-height:180px;overflow:auto;border:1px solid var(--rule);border-radius:8px}
+.empty{padding:10px;font-size:13px;color:var(--muted)}
+
+/* Booklet */
+.booklet{padding:0;overflow:hidden}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--rule);padding:0 12px;overflow-x:auto;background:var(--sheet)}
+.tab{border:none;background:none;padding:13px 14px 11px;cursor:pointer;font-weight:600;font-size:14px;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--cobalt)}
+.tab .tm{font-family:var(--font-mono);font-weight:400;font-size:12px;margin-left:6px}
+.page{padding:22px 26px 30px;display:none}
+.page.on{display:block}
+@media (max-width:560px){.page{padding:18px 16px 24px}}
+.page > * + *{margin-top:18px}
+.prose{max-width:72ch}
+.prose p{margin:0 0 10px}
+.source{border:1px solid var(--rule);border-radius:10px;padding:16px 18px;background:var(--paper)}
+.source h3{font-size:16px;margin-bottom:8px}
+.eqn{font-family:var(--font-mono);font-size:15px;padding:12px 14px;border-radius:8px;background:var(--sheet);border:1px solid var(--rule);overflow-x:auto;white-space:nowrap}
+.eqn .p{color:var(--pink);font-weight:500}
+.eqn .b{color:var(--cobalt);font-weight:500}
+.swatches{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:14px}
+.sw{display:flex;align-items:center;gap:8px}
+.sw i{width:18px;height:18px;border-radius:50%;display:inline-block;border:1px solid var(--rule)}
+.hazard{border-left:4px solid var(--warn);padding:8px 12px;background:var(--sheet);border-radius:0 8px 8px 0;font-size:14px}
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;font-size:13.5px}
+.terms div{border:1px solid var(--rule);border-radius:8px;padding:8px 10px;background:var(--sheet)}
+.terms b{font-family:var(--font-display)}
+
+.q{border-top:1px solid var(--rule);padding-top:18px;display:flex;flex-direction:column;gap:10px}
+.q:first-of-type{border-top:none;padding-top:0}
+.qhead{display:flex;gap:12px;align-items:baseline;justify-content:space-between}
+.qnum{font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--cobalt);min-width:34px}
+.qtext{flex:1}
+.qtext p{margin:0 0 6px}
+.cmd{font-weight:700;text-transform:none}
+.marks{font-family:var(--font-mono);font-size:13px;border:1px solid var(--rule);border-radius:6px;padding:1px 8px;white-space:nowrap;background:var(--paper)}
+textarea{width:100%;border:1px solid var(--rule);border-radius:8px;padding:10px 12px;background:var(--paper);resize:vertical;line-height:1.5}
+textarea:focus{background:var(--sheet)}
+textarea[readonly]{opacity:.85}
+.wc{font-size:12px;color:var(--muted);text-align:right;margin-top:-6px}
+
+/* Data table */
+.dt-wrap{overflow-x:auto}
+.dt{border-collapse:collapse;min-width:560px;width:100%;font-variant-numeric:tabular-nums}
+.dt th,.dt td{border:1px solid var(--rule);padding:0}
+.dt input{width:100%;border:none;background:transparent;padding:7px 8px;text-align:center;font-family:var(--font-mono);font-size:14px}
+.dt thead input{font-family:var(--font-body);font-weight:600;font-size:13px}
+.dt thead tr.group th{font-size:12px;color:var(--muted);padding:5px;background:var(--paper);font-weight:600}
+.dt td.mean{background:var(--cobalt-soft)}
+.dt input:focus{background:var(--sheet)}
+
+.graphbox{border:1px solid var(--rule);border-radius:10px;padding:12px;background:var(--sheet)}
+.graph-ctrls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+@media (max-width:560px){.graph-ctrls{grid-template-columns:1fr}}
+.graph-ctrls label{font-size:13px;font-weight:500;display:flex;flex-direction:column;gap:4px}
+.graph-ctrls input,.graph-ctrls select{border:1px solid var(--rule);border-radius:6px;padding:6px 8px;background:var(--paper)}
+.checkline{flex-direction:row !important;align-items:center;gap:8px !important}
+canvas{width:100%;display:block}
+
+/* Mark scheme */
+.ms{display:none;border:1px solid var(--good);border-radius:10px;padding:12px 14px;background:color-mix(in srgb,var(--good) 7%,var(--sheet))}
+body.marking .ms{display:block}
+.ms h4{margin:0 0 6px;font-family:var(--font-display);font-size:14px;color:var(--good);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.ms ul{margin:0 0 8px;padding-left:20px;font-size:14px}
+.ms .model{font-size:13.5px;border-top:1px dashed var(--rule);padding-top:8px;color:var(--muted)}
+.ms .model b{color:var(--ink)}
+.award{display:flex;align-items:center;gap:6px;font-family:var(--font-body);font-size:13px;color:var(--ink)}
+.award input{width:56px;border:1px solid var(--rule);border-radius:6px;padding:4px 6px;text-align:center;background:var(--sheet);font-family:var(--font-mono)}
+
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.score{border:1px solid var(--rule);border-radius:10px;padding:14px;background:var(--paper)}
+.score .k{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.score .v{font-family:var(--font-display);font-size:30px;font-weight:700}
+.score .v small{font-size:15px;color:var(--muted);font-weight:500}
+.level{display:inline-block;margin-top:4px;font-size:13px;padding:2px 10px;border-radius:999px;background:var(--cobalt-soft);color:var(--cobalt);font-weight:600}
+.bands{width:100%;border-collapse:collapse;font-size:13.5px}
+.bands th,.bands td{border-bottom:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top}
+.bands th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.notice{font-size:14px;padding:10px 14px;border-radius:8px;background:var(--cobalt-soft);border:1px solid var(--rule)}
+.notice.ok{background:color-mix(in srgb,var(--good) 12%,var(--sheet))}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.on{opacity:1}
+.pinrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pinrow input{border:1px solid var(--rule);border-radius:6px;padding:7px 10px;background:var(--paper);width:160px}
+
+/* Physical scene */
+.scene{width:100%;border:1px solid var(--rule);border-radius:10px;background:var(--paper)}
+.compare{display:flex;flex-direction:column;gap:8px;border:1px solid var(--rule);border-radius:10px;padding:12px;background:#fbfbfd}
+.compare .ttl{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#5a6580;font-weight:600}
+.cmprow{display:flex;gap:12px;align-items:stretch}
+.heldtube{width:44px;flex:none;border:2px solid #9aa3b8;border-top:none;border-radius:0 0 22px 22px;height:96px;position:relative;overflow:hidden;background:#fff}
+.heldtube div{position:absolute;left:0;right:0;bottom:0;height:80%;transition:background-color .4s linear}
+.chart{flex:1;display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.chart .s{display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--font-mono);font-size:12px;color:#16203a}
+.chart .s i{display:block;width:100%;height:68px;border-radius:4px;border:1px solid rgba(0,0,0,.08)}
+.chart-cap{display:flex;justify-content:space-between;font-size:11.5px;color:#5a6580}
+@media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <span class="eyebrow">MYP Sciences · Equilibrium unit · Criteria B &amp; C practice</span>
+      <h1>Cobalt Chloride Equilibrium Lab</h1>
+    </div>
+    <div class="meta">
+      <div class="field-inline"><label for="studentName">Name</label><input id="studentName" placeholder="Your name" autocomplete="off"></div>
+      <div class="field-inline"><label for="studentClass">Class</label><input id="studentClass" placeholder="e.g. MYP 5A" style="min-width:110px" autocomplete="off"></div>
+      <span class="chip">Total <strong>32</strong> marks</span>
+      <button class="chip timer" id="timerBtn" type="button" title="Start or pause a 60-minute exam timer">⏱ <strong id="timerTxt">60:00</strong></button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- LAB BENCH -->
+  <section class="panel bench" aria-label="Virtual lab">
+    <div>
+      <h2>Virtual lab bench</h2>
+      <p class="small" style="margin:4px 0 0">A test tube of cobalt(II) chloride solution sits in a water bath. Watch the colour, read the thermometer, and match the tube to the colour chart by eye. Time runs 10× faster than real time.</p>
+    </div>
+
+    <canvas class="scene" id="scene" height="270" aria-label="Water bath with test tube and thermometer; magnified thermometer scale on the right"></canvas>
+    <div class="clock" id="clock">Time in bath since last change: 0 min 00 s</div>
+
+    <div class="compare" aria-label="Colour chart comparison">
+      <span class="ttl">Hold the tube against the colour chart (white tile)</span>
+      <div class="cmprow">
+        <div class="heldtube" title="Your test tube"><div id="held"></div></div>
+        <div class="chart" id="chart"></div>
+      </div>
+      <div class="chart-cap"><span>1 = pink</span><span>purple</span><span>10 = blue</span></div>
+    </div>
+
+    <div class="controls">
+      <div class="ctrl">
+        <label for="tempSlider">Water bath (hotplate or ice) <span id="tempLbl">22 °C</span></label>
+        <input type="range" id="tempSlider" min="5" max="85" step="1" value="22">
+      </div>
+      <div class="ctrl">
+        <label for="hclSel">Concentrated HCl added to the tube <span>cm³</span></label>
+        <select id="hclSel"></select>
+      </div>
+      <div class="fixed">Each tube starts with 5.0 cm³ of 0.020 mol dm⁻³ cobalt(II) chloride solution. Concentrated HCl is 12 mol dm⁻³. Room temperature is 22 °C.</div>
+      <div class="btnrow">
+        <button class="btn primary" id="freshBtn" type="button">Prepare a fresh tube</button>
+      </div>
+      <p class="small" style="margin:0">Changing the volume of acid prepares a fresh tube at room temperature. The colour keeps changing until the tube reaches the bath temperature and equilibrium is re-established. Record your observations in your own table in Criterion C.</p>
+    </div>
+  </section>
+
+  <!-- BOOKLET -->
+  <section class="panel booklet" aria-label="Question booklet">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-info" aria-controls="page-info" aria-selected="true">Source information</button>
+      <button class="tab" role="tab" id="tab-b" aria-controls="page-b" aria-selected="false">Criterion B<span class="tm">/16</span></button>
+      <button class="tab" role="tab" id="tab-c" aria-controls="page-c" aria-selected="false">Criterion C<span class="tm">/16</span></button>
+      <button class="tab" role="tab" id="tab-r" aria-controls="page-r" aria-selected="false">Submit &amp; results</button>
+    </div>
+
+    <!-- INFO -->
+    <div class="page on" id="page-info" role="tabpanel" aria-labelledby="tab-info">
+      <div class="prose">
+        <h2 style="font-size:22px;margin-bottom:8px">Investigating the position of equilibrium</h2>
+        <p>Read this information before you answer. You will design an investigation (Criterion B), carry it out in the virtual lab, then process and evaluate your results (Criterion C). Write all answers in the boxes. Your work saves automatically in this browser.</p>
+      </div>
+
+      <div class="source">
+        <h3>Source 1: The cobalt chloride equilibrium</h3>
+        <p class="prose" style="margin:0 0 10px">When cobalt(II) chloride dissolves in hydrochloric acid, two cobalt complex ions exist together in a dynamic equilibrium:</p>
+        <div class="eqn"><span class="p">[Co(H₂O)₆]²⁺(aq)</span> + 4Cl⁻(aq) &nbsp;⇌&nbsp; <span class="b">[CoCl₄]²⁻(aq)</span> + 6H₂O(l)</div>
+        <div class="swatches">
+          <span class="sw"><i style="background:#e78ab5"></i>[Co(H₂O)₆]²⁺ is pink</span>
+          <span class="sw"><i style="background:#2652c9"></i>[CoCl₄]²⁻ is blue</span>
+          <span class="sw"><i style="background:#7a5bbf"></i>a mixture looks purple</span>
+        </div>
+        <p class="prose" style="margin:10px 0 0">The forward reaction is <b>endothermic</b> (ΔH is positive).</p>
+      </div>
+
+      <div class="source">
+        <h3>Source 2: Measuring colour with a colour chart</h3>
+        <div class="prose">
+          <p>The colour of the solution shows the position of equilibrium. Pink means mostly [Co(H₂O)₆]²⁺, blue means mostly [CoCl₄]²⁻ and purple means a mixture.</p>
+          <p style="margin:0">To record the colour as a number, hold the test tube against a white tile next to a colour chart numbered <b>1</b> (pink) to <b>10</b> (blue) and choose the closest match. A higher number means the position of equilibrium lies further to the right.</p>
+        </div>
+      </div>
+
+      <div class="source">
+        <h3>Source 3: Hazards</h3>
+        <div class="hazard"><b>Concentrated hydrochloric acid</b> (12 mol dm⁻³): corrosive; causes burns and serious eye damage; gives off irritating fumes, so use it in a fume cupboard or well-ventilated room.</div>
+        <div class="hazard" style="margin-top:8px"><b>Cobalt(II) chloride</b>: toxic; may cause cancer if inhaled; may cause skin and breathing sensitisation; very toxic to aquatic life.</div>
+        <div class="hazard" style="margin-top:8px"><b>Water bath</b>: hot water above 60 °C can scald.</div>
+      </div>
+
+      <div>
+        <h3 style="font-size:16px;margin-bottom:8px">Command terms used in this paper</h3>
+        <div class="terms">
+          <div><b>State</b>: give a specific name, value or other brief answer without explanation.</div>
+          <div><b>Formulate</b>: express precisely and systematically the relevant concept(s) or argument(s).</div>
+          <div><b>Explain</b>: give a detailed account including reasons or causes.</div>
+          <div><b>Justify</b>: give valid reasons or evidence to support an answer or conclusion.</div>
+          <div><b>Design</b>: produce a plan, simulation or model.</div>
+          <div><b>Present</b>: offer for display, observation, examination or consideration.</div>
+          <div><b>Interpret</b>: use knowledge and understanding to recognize trends and draw conclusions from given information.</div>
+          <div><b>Discuss</b>: offer a considered and balanced review that includes a range of arguments, factors or hypotheses.</div>
+          <div><b>Evaluate</b>: make an appraisal by weighing up the strengths and limitations.</div>
+          <div><b>Suggest</b>: propose a solution, hypothesis or other possible answer.</div>
+        </div>
+      </div>
+      <div class="btnrow"><button class="btn primary" type="button" data-go="b">Start Criterion B →</button></div>
+    </div>
+
+    <!-- CRITERION B -->
+    <div class="page" id="page-b" role="tabpanel" aria-labelledby="tab-b">
+      <div class="prose">
+        <span class="eyebrow">Criterion B · Inquiring and designing</span>
+        <h2 style="font-size:22px;margin:4px 0 8px">Plan your investigation</h2>
+        <p>Choose <b>one</b> independent variable to investigate: the <b>temperature</b> of the solution or the <b>volume of concentrated hydrochloric acid</b> added. You may try the virtual lab before you plan.</p>
+      </div>
+      <div id="qB"></div>
+      <div class="btnrow"><button class="btn primary" type="button" data-go="c">Continue to Criterion C →</button></div>
+    </div>
+
+    <!-- CRITERION C -->
+    <div class="page" id="page-c" role="tabpanel" aria-labelledby="tab-c">
+      <div class="prose">
+        <span class="eyebrow">Criterion C · Processing and evaluating</span>
+        <h2 style="font-size:22px;margin:4px 0 8px">Carry out the investigation, then process your results</h2>
+        <p>Use the virtual lab to follow your method from Criterion B. Record your readings, then answer the questions below.</p>
+      </div>
+      <div id="qC"></div>
+      <div class="btnrow"><button class="btn primary" type="button" data-go="r">Go to Submit &amp; results →</button></div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="page" id="page-r" role="tabpanel" aria-labelledby="tab-r">
+      <div class="prose">
+        <span class="eyebrow">Submit &amp; results</span>
+        <h2 style="font-size:22px;margin:4px 0 8px">Submit, send your PDF, then mark</h2>
+        <p>When you submit, your answers lock. Download them as a PDF and send it to your teacher. When your teacher shares the mark scheme code, enter it below: the mark scheme appears under every question and you can award marks. Totals convert to an MYP achievement level from 0 to 8.</p>
+      </div>
+      <div id="submitState" class="notice">Answers are not submitted yet.</div>
+      <div class="btnrow">
+        <button class="btn primary" id="submitBtn" type="button">Submit my answers</button>
+        <button class="btn primary" id="pdfBtn" type="button" hidden>Download my answers (PDF)</button>
+        <button class="btn" id="copyText" type="button">Copy answers as text</button>
+      </div>
+      <p class="small" id="pdfMsg" style="margin:0">After you submit, download your answers as a PDF and send it to your teacher.</p>
+
+      <div class="source">
+        <h3>Mark scheme code</h3>
+        <p class="small" style="margin:0 0 10px">Your teacher shares this code after receiving your PDF. It unlocks the mark scheme under every question so you can mark your work.</p>
+        <div class="pinrow">
+          <label for="msCode" class="small">Code</label>
+          <input id="msCode" autocomplete="off" placeholder="e.g. ABCDE-1234" style="width:200px;text-transform:uppercase">
+          <button class="btn" id="msBtn" type="button">Unlock mark scheme</button>
+        </div>
+        <p class="small" id="msMsg" style="margin:8px 0 0"></p>
+      </div>
+
+      <div class="summary">
+        <div class="score"><div class="k">Criterion B</div><div class="v"><span id="sumB">–</span><small> / 16</small></div><span class="level" id="lvlB">Level –</span></div>
+        <div class="score"><div class="k">Criterion C</div><div class="v"><span id="sumC">–</span><small> / 16</small></div><span class="level" id="lvlC">Level –</span></div>
+        <div class="score"><div class="k">Questions marked</div><div class="v"><span id="sumN">0</span><small> / 11</small></div></div>
+      </div>
+
+      <table class="bands">
+        <thead><tr><th>Raw marks</th><th>Level</th><th>Descriptor (summary)</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>0</td><td>Does not reach a standard described below.</td></tr>
+          <tr><td>1–4</td><td>1–2</td><td>Limited: states some parts, with little scientific reasoning.</td></tr>
+          <tr><td>5–8</td><td>3–4</td><td>Adequate: outlines with some reasoning; method or processing partly complete.</td></tr>
+          <tr><td>9–12</td><td>5–6</td><td>Substantial: explains using correct scientific reasoning; mostly complete and accurate.</td></tr>
+          <tr><td>13–16</td><td>7–8</td><td>Excellent: explains and justifies fully; complete, accurate and well evaluated.</td></tr>
+        </tbody>
+      </table>
+
+      <div>
+        <label for="feedback" style="font-weight:600;display:block;margin-bottom:6px">Feedback and target</label>
+        <textarea id="feedback" rows="4" placeholder="Strengths, and one target for next time."></textarea>
+      </div>
+      <div class="btnrow"><button class="btn ghost" id="resetBtn" type="button">Start a new attempt…</button></div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+/* ===================== CHEMISTRY MODEL ===================== */
+// [Co(H2O)6]2+ + 4Cl- <=> [CoCl4]2- + 6H2O, endothermic forward.
+// Simplified model: K' = [CoCl4]/([Co(H2O)6][Cl-]^4), van 't Hoff with dH = +50 kJ/mol.
+// Calibrated so ~30% is [CoCl4]2- at 25 C with [Cl-] = 6 mol dm-3.
+const R = 8.314, DH = 50000, K298 = 3.307e-4;
+const V0 = 5.0, CO = 0.020, HCL = 12;
+function Kp(Tc){ const T = Tc + 273.15; return K298 * Math.exp(-DH/R * (1/T - 1/298.15)); }
+function chloride(v){ return (HCL*v + 2*CO*V0)/(V0+v); }
+function fracBlue(Tc, cl){ const x = Kp(Tc) * Math.pow(cl,4); return x/(1+x); }
+function gauss(){ let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+const ROOM = 22, SPEED = 10, TAU_T = 45, TAU_F = 20;
+const sim = { set:22, T:ROOM, v:5, cl:chloride(5), f:0, off:0, t:0 };
+sim.f = fracBlue(ROOM, sim.cl);
+
+const $ = id => document.getElementById(id);
+const hclSel = $("hclSel");
+for(let v=0; v<=10; v++){ const o=document.createElement("option"); o.value=v; o.textContent=v.toFixed(1)+" cm³"; if(v===5)o.selected=true; hclSel.appendChild(o); }
+
+function mix(f){
+  f=Math.max(0,Math.min(1,f));
+  const p=[236,150,190], m=[128,88,184], b=[34,74,196];
+  const [a,c,t] = f<0.5 ? [p,m,f/0.5] : [m,b,(f-0.5)/0.5];
+  const r=a.map((x,i)=>Math.round(x+(c[i]-x)*t));
+  return `rgb(${r[0]},${r[1]},${r[2]})`;
+}
+// Colour chart 1..10
+const chartEl = $("chart");
+for(let k=1;k<=10;k++){ const d=document.createElement("div"); d.className="s"; d.innerHTML=`<i style="background:${mix((k-1)/9)}"></i>${k}`; chartEl.appendChild(d); }
+
+function freshSample(){ sim.T = ROOM; sim.f = fracBlue(ROOM, sim.cl); sim.t = 0; sim.off = gauss()*0.025; }
+$("tempSlider").addEventListener("input", e=>{ sim.set = +e.target.value; $("tempLbl").textContent = sim.set+" °C"; sim.t = 0; });
+hclSel.addEventListener("change", e=>{ sim.v = +e.target.value; sim.cl = chloride(sim.v); freshSample(); toast("Fresh tube prepared with "+sim.v.toFixed(1)+" cm³ of concentrated HCl"); });
+$("freshBtn").addEventListener("click", ()=>{ freshSample(); toast("Fresh tube placed in the bath at room temperature"); });
+
+/* ---------- Scene drawing ---------- */
+function drawScene(){
+  const cv=$("scene"); const dpr=window.devicePixelRatio||1; const W=cv.clientWidth||400, H=270;
+  if(cv.width!==Math.round(W*dpr)){ cv.width=W*dpr; cv.height=H*dpr; }
+  const g=cv.getContext("2d"); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
+  const ink=cssVar("--ink"), muted=cssVar("--muted"), rule=cssVar("--rule");
+  const col = mix(sim.f+sim.off);
+  // layout
+  const magW = Math.min(130, W*0.32), sceneW = W - magW - 16;
+  const bx=14, bw=Math.min(210,sceneW-24), by=60, bh=170;
+  // hotplate / ice
+  if(sim.set>ROOM+2){ g.fillStyle="#3b4152"; g.fillRect(bx-6,by+bh+4,bw+12,16); g.fillStyle=sim.set>50?"#e2553a":"#e89a3a"; g.fillRect(bx+bw/2-18,by+bh+9,36,5); }
+  else { g.fillStyle="#3b4152"; g.fillRect(bx-6,by+bh+4,bw+12,16); }
+  // water
+  const wt = Math.max(0,Math.min(1,(sim.T-5)/80));
+  const wc = `rgba(${Math.round(120+110*wt)},${Math.round(180-40*wt)},${Math.round(230-120*wt)},0.30)`;
+  g.fillStyle=wc; g.fillRect(bx,by+30,bw,bh-30);
+  // ice cubes
+  if(sim.set<12){ g.fillStyle="rgba(220,240,255,0.9)"; g.strokeStyle="rgba(150,180,210,.9)"; [[bx+16,by+34],[bx+bw-48,by+36],[bx+40,by+40]].forEach(([x,y])=>{ g.fillRect(x,y,22,18); g.strokeRect(x,y,22,18); }); }
+  // bubbles / steam
+  if(sim.T>60){ g.strokeStyle=muted; g.globalAlpha=.5; for(let i=0;i<3;i++){ const x=bx+40+i*55, y=by+18-((performance.now()/40+i*20)%26); g.beginPath(); g.moveTo(x,y+12); g.bezierCurveTo(x-6,y+6,x+6,y+2,x,y-6); g.stroke(); } g.globalAlpha=1; }
+  // beaker outline
+  g.strokeStyle=muted; g.lineWidth=2; g.beginPath(); g.moveTo(bx-4,by); g.lineTo(bx,by); g.lineTo(bx,by+bh); g.lineTo(bx+bw,by+bh); g.lineTo(bx+bw,by); g.stroke();
+  // test tube
+  const tx=bx+bw*0.30, tw=30, ty=by-40, th=bh-18;
+  const fill = (V0+sim.v)/15; // 5 to 15 cm3
+  const lh = th*(0.30+0.55*fill);
+  g.save(); g.beginPath(); g.moveTo(tx,ty); g.lineTo(tx,ty+th-tw/2); g.arc(tx+tw/2,ty+th-tw/2,tw/2,Math.PI,0,true); g.lineTo(tx+tw,ty); g.closePath(); g.clip();
+  g.fillStyle=col; g.fillRect(tx,ty+th-lh,tw,lh); g.restore();
+  g.strokeStyle=ink; g.lineWidth=1.6; g.beginPath(); g.moveTo(tx,ty); g.lineTo(tx,ty+th-tw/2); g.arc(tx+tw/2,ty+th-tw/2,tw/2,Math.PI,0,true); g.lineTo(tx+tw,ty); g.stroke();
+  // clamp
+  g.fillStyle=muted; g.fillRect(tx-10,ty+8,tw+20,6);
+  // thermometer (glass)
+  const mx=bx+bw*0.70, mTop=by-46, mBot=by+bh-14, mw=10;
+  const tmin=0,tmax=100; const yOf=t=> mBot-12 - (t-tmin)/(tmax-tmin)*(mBot-12-mTop-6);
+  g.fillStyle="rgba(255,255,255,.85)"; g.strokeStyle=ink; g.lineWidth=1.2;
+  g.beginPath(); g.roundRect ? g.roundRect(mx-mw/2,mTop,mw,mBot-mTop,5) : g.rect(mx-mw/2,mTop,mw,mBot-mTop); g.fill(); g.stroke();
+  g.fillStyle="#d2302f"; g.beginPath(); g.arc(mx,mBot-4,8,0,Math.PI*2); g.fill();
+  g.fillRect(mx-2,yOf(sim.T),4,mBot-4-yOf(sim.T));
+  g.strokeStyle=ink; g.lineWidth=1; g.font=`10px ${cssVar("--font-mono")}`; g.fillStyle=ink; g.textAlign="left"; g.textBaseline="middle";
+  for(let t=0;t<=100;t+=2){ const y=yOf(t); const L=t%10===0?7:3; g.beginPath(); g.moveTo(mx+mw/2,y); g.lineTo(mx+mw/2+L,y); g.stroke(); if(t%20===0) g.fillText(t,mx+mw/2+9,y); }
+  // magnifier
+  const px=W-magW-6, py=14, ph=H-28;
+  g.fillStyle=cssVar("--sheet"); g.strokeStyle=rule; g.lineWidth=1; g.beginPath(); g.roundRect ? g.roundRect(px,py,magW,ph,10) : g.rect(px,py,magW,ph); g.fill(); g.stroke();
+  g.fillStyle=muted; g.font=`600 10.5px ${cssVar("--font-body")}`; g.textAlign="center"; g.textBaseline="top";
+  g.fillText("THERMOMETER (×5)",px+magW/2,py+8);
+  const c0=Math.round(sim.T), span=8; const zx=px+magW*0.38, zTop=py+30, zBot=py+ph-14;
+  const zy=t=> zBot - (t-(c0-span))/(2*span)*(zBot-zTop);
+  g.fillStyle="rgba(255,255,255,.9)"; g.fillRect(zx-9,zTop,18,zBot-zTop); g.strokeStyle=ink; g.strokeRect(zx-9,zTop,18,zBot-zTop);
+  g.fillStyle="#d2302f"; const yl=Math.max(zTop,Math.min(zBot,zy(sim.T))); g.fillRect(zx-4,yl,8,zBot-yl);
+  g.strokeStyle=ink; g.fillStyle=ink; g.textAlign="left"; g.textBaseline="middle"; g.font=`11px ${cssVar("--font-mono")}`;
+  for(let t=c0-span;t<=c0+span;t++){ const y=zy(t); const L=t%5===0?12:6; g.beginPath(); g.moveTo(zx+9,y); g.lineTo(zx+9+L,y); g.stroke(); if(t%2===0) g.fillText(t,zx+24,y); }
+  g.fillStyle=muted; g.textAlign="center"; g.font=`10px ${cssVar("--font-body")}`; g.fillText("°C",px+magW/2,zBot+7);
+  // label
+  g.fillStyle=muted; g.textAlign="left"; g.textBaseline="alphabetic"; g.font=`11px ${cssVar("--font-body")}`; g.fillText("water bath",bx+4,by+bh-6);
+}
+let last = performance.now(), acc = 0;
+function step(now){
+  const dt = Math.min(0.25,(now-last)/1000); last = now;
+  const ds = dt*SPEED;
+  sim.T += (sim.set - sim.T)*(1-Math.exp(-ds/TAU_T));
+  const feq = fracBlue(sim.T, sim.cl);
+  sim.f += (feq - sim.f)*(1-Math.exp(-ds/TAU_F));
+  sim.t += ds; acc += dt;
+  if(acc > 0.08){
+    acc = 0; drawScene();
+    $("held").style.backgroundColor = mix(sim.f+sim.off);
+    const s = Math.floor(sim.t); $("clock").textContent = `Time in bath since last change: ${Math.floor(s/60)} min ${String(s%60).padStart(2,"0")} s`;
+  }
+  requestAnimationFrame(step);
+}
+
+/* ===================== STATE & STORAGE ===================== */
+const KEY = "myp-cocl-equilibrium-v1";
+let state = { name:"", cls:"", answers:{}, table:{head:["","","","",""], rows:Array.from({length:7},()=>["","","","",""])}, graph:{x:"",y:"",fit:"none",bars:true}, submitted:false, marks:{}, feedback:"", timer:3600 };
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function load(){ try{ const s = localStorage.getItem(KEY); if(s){ state = Object.assign(state, JSON.parse(s)); } }catch(e){} }
+load();
+
+/* ===================== INLINE CONFIRM ===================== */
+let pendingConfirm = null;
+function confirmInline(id,msg){ if(pendingConfirm===id){ pendingConfirm=null; return true; } pendingConfirm=id; toast(msg); setTimeout(()=>{ if(pendingConfirm===id) pendingConfirm=null; },3000); return false; }
+
+/* ===================== QUESTIONS ===================== */
+const Q = [
+ {"id":"B1","crit":"B","max":2,"rows":3,"text":"<p><span class=\"cmd\">State</span> a focused research question for your investigation.</p>"},
+ {"id":"B2","crit":"B","max":4,"rows":6,"text":"<p><span class=\"cmd\">Formulate</span> a testable hypothesis and <span class=\"cmd\">explain</span> it using scientific reasoning.</p>"},
+ {"id":"B3","crit":"B","max":4,"rows":6,"text":"<p><span class=\"cmd\">State</span> the independent variable and the dependent variable, and <span class=\"cmd\">explain</span> how you will control <b>two</b> other variables.</p>"},
+ {"id":"B4","crit":"B","max":2,"rows":4,"text":"<p><span class=\"cmd\">Justify</span> how you will make your colour observations as reliable as possible.</p>"},
+ {"id":"B5","crit":"B","max":4,"rows":9,"text":"<p><span class=\"cmd\">Design</span> a safe method that will collect sufficient, relevant data. Write numbered steps.</p>"},
+ {"id":"C1","crit":"C","max":3,"widget":"table","text":"<p><span class=\"cmd\">Present</span> your raw data in a suitable table. Type your own column headings with units. Include three trials and a mean for each value.</p>"},
+ {"id":"C2","crit":"C","max":3,"widget":"graph","text":"<p><span class=\"cmd\">Present</span> your processed data as a graph. Give axis titles with units and choose a suitable line or curve of best fit.</p>"},
+ {"id":"C3","crit":"C","max":4,"rows":7,"text":"<p><span class=\"cmd\">Interpret</span> your data. Describe the trend and explain it using scientific reasoning.</p>"},
+ {"id":"C4","crit":"C","max":2,"rows":4,"text":"<p><span class=\"cmd\">Discuss</span> the validity of your hypothesis based on your results.</p>"},
+ {"id":"C5","crit":"C","max":2,"rows":5,"text":"<p><span class=\"cmd\">Evaluate</span> the validity of your method. Identify <b>two</b> weaknesses and explain how each affected the results.</p>"},
+ {"id":"C6","crit":"C","max":2,"rows":5,"text":"<p><span class=\"cmd\">Suggest</span> improvements to your method and an extension to the investigation.</p>"}
+];
+// Mark scheme: AES-GCM encrypted; the key comes from the teacher's code (PBKDF2-SHA256).
+const MS_ENC = {"salt":"YhTnFeAApbfrzspn1VL8Tw==","iv":"DZi69mhQy3fZ+6aF","iter":150000,"ct":"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"};
+
+function wordCount(s){ return (s.trim().match(/\S+/g)||[]).length; }
+function msBlock(q){
+  return `<div class="ms" id="ms-${q.id}">
+    <h4><span>Mark scheme ${q.id}</span>
+      <span class="award"><label for="mk-${q.id}">Marks awarded</label><input id="mk-${q.id}" type="number" min="0" max="${q.max}" step="1" inputmode="numeric"> / ${q.max}</span></h4>
+    <div class="ms-body" id="msb-${q.id}"></div>
+  </div>`;
+}
+function renderQuestions(){
+  ["B","C"].forEach(c=>{
+    const host = $("q"+c); host.innerHTML = "";
+    Q.filter(q=>q.crit===c).forEach(q=>{
+      const d = document.createElement("div"); d.className="q";
+      let body = "";
+      if(q.widget==="table") body = tableHTML();
+      else if(q.widget==="graph") body = graphHTML();
+      else body = `<textarea id="ans-${q.id}" rows="${q.rows}" aria-label="Answer to ${q.id}"></textarea><div class="wc" id="wc-${q.id}">0 words</div>`;
+      d.innerHTML = `<div class="qhead"><span class="qnum">${q.id}</span><div class="qtext">${q.text}</div><span class="marks">[${q.max}]</span></div>${body}${msBlock(q)}`;
+      host.appendChild(d);
+    });
+  });
+  Q.forEach(q=>{
+    const ta = $("ans-"+q.id);
+    if(ta){
+      ta.value = state.answers[q.id] || "";
+      $("wc-"+q.id).textContent = wordCount(ta.value)+" words";
+      ta.addEventListener("input", ()=>{ state.answers[q.id]=ta.value; $("wc-"+q.id).textContent = wordCount(ta.value)+" words"; save(); });
+    }
+    const mk = $("mk-"+q.id);
+    if(state.marks[q.id]!==undefined && state.marks[q.id]!=="") mk.value = state.marks[q.id];
+    mk.addEventListener("input", ()=>{
+      let v = mk.value===""? "" : Math.max(0, Math.min(q.max, Math.round(+mk.value)));
+      if(mk.value!=="" && +mk.value!==v) mk.value = v;
+      state.marks[q.id] = v; save(); updateTotals();
+    });
+  });
+  bindTable(); bindGraph();
+}
+
+/* ===================== DATA TABLE ===================== */
+function tableHTML(){
+  return `<div class="dt-wrap"><table class="dt" id="dt">
+    <thead>
+      <tr class="group"><th>Independent variable</th><th colspan="3">Dependent variable: trials</th><th>Processed</th></tr>
+      <tr>${[0,1,2,3,4].map(i=>`<th><input id="h${i}" placeholder="${["Independent variable / unit","Trial 1","Trial 2","Trial 3","Mean"][i]}" aria-label="Column ${i+1} heading"></th>`).join("")}</tr>
+    </thead><tbody id="dtBody"></tbody></table></div>
+    <div class="btnrow" style="margin-top:8px">
+      <button class="btn" type="button" id="addRow">Add row</button>
+      <button class="btn" type="button" id="delRow">Remove last row</button>
+    </div>`;
+}
+function renderRows(){
+  const tb = $("dtBody"); tb.innerHTML="";
+  state.table.rows.forEach((r,ri)=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML = r.map((v,ci)=>`<td class="${ci===4?"mean":""}"><input id="c${ri}_${ci}" inputmode="decimal" aria-label="Row ${ri+1} column ${ci+1}"></td>`).join("");
+    tb.appendChild(tr);
+    r.forEach((v,ci)=>{ const inp=$(`c${ri}_${ci}`); inp.value=v; inp.addEventListener("input",()=>{ state.table.rows[ri][ci]=inp.value; save(); drawGraph(); }); });
+  });
+  applyLock();
+}
+function bindTable(){
+  state.table.head.forEach((v,i)=>{ const h=$("h"+i); h.value=v; h.addEventListener("input",()=>{ state.table.head[i]=h.value; save(); }); });
+  renderRows();
+  $("addRow").addEventListener("click",()=>{ if(state.submitted) return; state.table.rows.push(["","","","",""]); renderRows(); save(); });
+  $("delRow").addEventListener("click",()=>{ if(state.submitted) return; if(state.table.rows.length>1){ state.table.rows.pop(); renderRows(); save(); drawGraph(); } });
+}
+
+/* ===================== GRAPH ===================== */
+function graphHTML(){
+  return `<div class="graphbox">
+    <div class="graph-ctrls">
+      <label>x-axis title<input id="gx" placeholder="Quantity / unit"></label>
+      <label>y-axis title<input id="gy" placeholder="Quantity / unit"></label>
+      <label>Line of best fit
+        <select id="gfit"><option value="none">None</option><option value="line">Straight line</option><option value="curve">Smooth curve</option></select></label>
+      <label class="checkline"><input type="checkbox" id="gbars"> Show range bars (lowest to highest trial)</label>
+    </div>
+    <canvas id="graph" height="340" aria-label="Graph of your table data"></canvas>
+    <p class="small" style="margin:6px 0 0">The graph plots column 1 (x) against your <b>Mean</b> column (y). Fill in the means yourself.</p>
+  </div>`;
+}
+function bindGraph(){
+  const g=state.graph;
+  $("gx").value=g.x; $("gy").value=g.y; $("gfit").value=g.fit; $("gbars").checked=g.bars;
+  $("gx").addEventListener("input",e=>{g.x=e.target.value;save();drawGraph();});
+  $("gy").addEventListener("input",e=>{g.y=e.target.value;save();drawGraph();});
+  $("gfit").addEventListener("change",e=>{g.fit=e.target.value;save();drawGraph();});
+  $("gbars").addEventListener("change",e=>{g.bars=e.target.checked;save();drawGraph();});
+  drawGraph();
+}
+function num(v){ if(v===undefined||v===null) return NaN; const s=String(v).trim().replace(",","."); return s===""?NaN:+s; }
+function niceStep(range,target){ const raw=range/target; const p=Math.pow(10,Math.floor(Math.log10(raw))); const n=raw/p; return (n<1.5?1:n<3?2:n<7?5:10)*p; }
+function polyfit(xs,ys,deg){
+  const mx=xs.reduce((a,b)=>a+b,0)/xs.length; const sx=Math.sqrt(xs.reduce((a,b)=>a+(b-mx)**2,0)/xs.length)||1;
+  const X=xs.map(x=>(x-mx)/sx); const n=deg+1;
+  const A=Array.from({length:n},()=>Array(n+1).fill(0));
+  for(let i=0;i<X.length;i++){ for(let r=0;r<n;r++){ for(let c=0;c<n;c++) A[r][c]+=Math.pow(X[i],r+c); A[r][n]+=ys[i]*Math.pow(X[i],r); } }
+  for(let i=0;i<n;i++){ let m=i; for(let r=i+1;r<n;r++) if(Math.abs(A[r][i])>Math.abs(A[m][i])) m=r; [A[i],A[m]]=[A[m],A[i]]; if(Math.abs(A[i][i])<1e-12) return null;
+    for(let r=0;r<n;r++){ if(r===i) continue; const f=A[r][i]/A[i][i]; for(let c=i;c<=n;c++) A[r][c]-=f*A[i][c]; } }
+  const co=A.map((row,i)=>row[n]/row[i]);
+  return x=>{ const t=(x-mx)/sx; return co.reduce((s,c,i)=>s+c*Math.pow(t,i),0); };
+}
+function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function drawGraph(){
+  const cv=$("graph"); if(!cv) return;
+  const dpr=window.devicePixelRatio||1; const W=cv.clientWidth||600, H=340;
+  cv.width=W*dpr; cv.height=H*dpr; const ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
+  const ink=cssVar("--ink"), muted=cssVar("--muted"), rule=cssVar("--rule"), acc=cssVar("--cobalt"), pink=cssVar("--pink");
+  ctx.clearRect(0,0,W,H);
+  const pts=[];
+  state.table.rows.forEach(r=>{ const x=num(r[0]), y=num(r[4]); if(isFinite(x)&&isFinite(y)){ const tr=[1,2,3].map(i=>num(r[i])).filter(isFinite); pts.push({x,y,lo:tr.length?Math.min(...tr):y,hi:tr.length?Math.max(...tr):y}); } });
+  const L=62,Rr=18,T=16,B=52; const pw=W-L-Rr, ph=H-T-B;
+  ctx.font=`12px ${cssVar("--font-body")}`;
+  if(pts.length<2){
+    ctx.strokeStyle=rule; ctx.strokeRect(L,T,pw,ph); ctx.fillStyle=muted; ctx.textAlign="center";
+    ctx.fillText("Enter at least two rows with an x value and a mean to plot your graph.",L+pw/2,T+ph/2); return;
+  }
+  let x0=Math.min(...pts.map(p=>p.x)), x1=Math.max(...pts.map(p=>p.x));
+  let y0=Math.min(0,...pts.map(p=>p.lo)), y1=Math.max(...pts.map(p=>p.hi));
+  if(x1===x0){x0-=1;x1+=1;} if(y1===y0){y1=y0+1;}
+  const xs=niceStep(x1-x0,6), ys=niceStep(y1-y0,6);
+  x0=Math.floor(x0/xs)*xs; x1=Math.ceil(x1/xs)*xs; y0=Math.floor(y0/ys)*ys; y1=Math.ceil(y1/ys)*ys;
+  const X=v=>L+(v-x0)/(x1-x0)*pw, Y=v=>T+ph-(v-y0)/(y1-y0)*ph;
+  const dec=s=>Math.max(0,-Math.floor(Math.log10(s)+1e-9));
+  ctx.lineWidth=1; ctx.strokeStyle=rule; ctx.fillStyle=muted;
+  ctx.textAlign="center"; ctx.textBaseline="top";
+  for(let v=x0; v<=x1+xs/2; v+=xs){ const px=X(v); ctx.beginPath(); ctx.moveTo(px,T); ctx.lineTo(px,T+ph); ctx.stroke(); ctx.fillText(v.toFixed(dec(xs)),px,T+ph+6); }
+  ctx.textAlign="right"; ctx.textBaseline="middle";
+  for(let v=y0; v<=y1+ys/2; v+=ys){ const py=Y(v); ctx.beginPath(); ctx.moveTo(L,py); ctx.lineTo(L+pw,py); ctx.stroke(); ctx.fillText(v.toFixed(dec(ys)),L-8,py); }
+  ctx.strokeStyle=ink; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(L,T); ctx.lineTo(L,T+ph); ctx.lineTo(L+pw,T+ph); ctx.stroke();
+  ctx.fillStyle=ink; ctx.font=`600 13px ${cssVar("--font-body")}`; ctx.textAlign="center"; ctx.textBaseline="alphabetic";
+  ctx.fillText(state.graph.x||"x-axis title missing",L+pw/2,H-10);
+  ctx.save(); ctx.translate(16,T+ph/2); ctx.rotate(-Math.PI/2); ctx.fillText(state.graph.y||"y-axis title missing",0,0); ctx.restore();
+  const sorted=[...pts].sort((a,b)=>a.x-b.x);
+  if(state.graph.fit!=="none"){
+    const deg = state.graph.fit==="line"?1:Math.min(3,sorted.length-1);
+    const fn=polyfit(sorted.map(p=>p.x),sorted.map(p=>p.y),deg);
+    if(fn){ ctx.strokeStyle=pink; ctx.lineWidth=2; ctx.beginPath(); const a=sorted[0].x,b=sorted[sorted.length-1].x;
+      for(let i=0;i<=120;i++){ const xv=a+(b-a)*i/120; const yv=fn(xv); const px=X(xv), py=Math.max(T,Math.min(T+ph,Y(yv))); i?ctx.lineTo(px,py):ctx.moveTo(px,py); } ctx.stroke(); }
+  }
+  sorted.forEach(p=>{
+    if(state.graph.bars && p.hi>p.lo){ ctx.strokeStyle=acc; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(X(p.x),Y(p.lo)); ctx.lineTo(X(p.x),Y(p.hi)); ctx.moveTo(X(p.x)-4,Y(p.lo)); ctx.lineTo(X(p.x)+4,Y(p.lo)); ctx.moveTo(X(p.x)-4,Y(p.hi)); ctx.lineTo(X(p.x)+4,Y(p.hi)); ctx.stroke(); }
+    ctx.fillStyle=acc; ctx.beginPath(); ctx.arc(X(p.x),Y(p.y),4,0,Math.PI*2); ctx.fill();
+  });
+}
+window.addEventListener("resize", ()=>drawGraph());
+try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>drawGraph()); }catch(e){}
+new MutationObserver(()=>drawGraph()).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+/* ===================== TABS ===================== */
+const tabs=["info","b","c","r"];
+function show(k){
+  tabs.forEach(t=>{ $("tab-"+t).setAttribute("aria-selected",t===k); $("page-"+t).classList.toggle("on",t===k); });
+  if(k==="c") requestAnimationFrame(drawGraph);
+  const bk=document.querySelector(".booklet"); if(bk.getBoundingClientRect().top<0) bk.scrollIntoView({behavior:"smooth"});
+}
+tabs.forEach(t=>$("tab-"+t).addEventListener("click",()=>show(t)));
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.go)));
+
+/* ===================== MARKING ===================== */
+let MS = null;
+function levelOf(raw){ return Math.min(8, Math.round(raw/2)); }
+function updateTotals(){
+  let b=0,c=0,n=0;
+  const has=id=>state.marks[id]!==undefined && state.marks[id]!=="";
+  Q.forEach(q=>{ if(has(q.id)){ n++; if(q.crit==="B") b+=+state.marks[q.id]; else c+=+state.marks[q.id]; } });
+  const anyB=Q.some(q=>q.crit==="B"&&has(q.id)), anyC=Q.some(q=>q.crit==="C"&&has(q.id));
+  $("sumB").textContent=anyB?b:"–"; $("sumC").textContent=anyC?c:"–"; $("sumN").textContent=n;
+  $("lvlB").textContent="Level "+(anyB?levelOf(b):"–"); $("lvlC").textContent="Level "+(anyC?levelOf(c):"–");
+}
+function applyLock(){
+  const lock = state.submitted;
+  document.querySelectorAll("textarea[id^=ans-], .dt input, #gx, #gy").forEach(el=>{ el.readOnly=lock; });
+  $("gfit").disabled=lock; $("gbars").disabled=lock;
+  if($("addRow")){ $("addRow").disabled=lock; $("delRow").disabled=lock; }
+  document.body.classList.toggle("marking", !!MS);
+  $("submitBtn").hidden = state.submitted;
+  $("pdfBtn").hidden = !state.submitted;
+  $("submitState").className = "notice"+(state.submitted?" ok":"");
+  $("submitState").textContent = state.submitted
+    ? (MS ? "Submitted and mark scheme unlocked. Award marks under each question, then download your marked PDF." : "Submitted. Your answers are locked. Download your PDF and send it to your teacher.")
+    : "Answers are not submitted yet.";
+}
+$("submitBtn").addEventListener("click",()=>{
+  if(!confirmInline("submit","Click Submit again to confirm. Your answers will lock.")) return;
+  state.submitted=true; state.submittedAt=new Date().toISOString(); save(); applyLock(); toast("Submitted. Now download your answers as a PDF.");
+});
+
+/* ---- Encrypted mark scheme ---- */
+function b64(s){ return Uint8Array.from(atob(s),c=>c.charCodeAt(0)); }
+function normCode(c){ return String(c||"").toUpperCase().replace(/\s+/g,""); }
+async function decryptMS(code){
+  const enc=new TextEncoder();
+  const base=await crypto.subtle.importKey("raw",enc.encode(normCode(code)),"PBKDF2",false,["deriveKey"]);
+  const key=await crypto.subtle.deriveKey({name:"PBKDF2",salt:b64(MS_ENC.salt),iterations:MS_ENC.iter,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["decrypt"]);
+  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64(MS_ENC.iv)},key,b64(MS_ENC.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+function showMS(){
+  Q.forEach(q=>{ const m=MS[q.id]; if(!m) return; $("msb-"+q.id).innerHTML=`<ul>${m.ms.map(x=>`<li>${x}</li>`).join("")}</ul><div class="model"><b>Example answer:</b> ${m.model}</div>`; });
+  applyLock();
+}
+async function tryUnlock(code, quiet){
+  try{ MS=await decryptMS(code); state.msCode=normCode(code); save(); showMS(); if(!quiet){ $("msMsg").textContent="Mark scheme unlocked. It now appears under every question."; toast("Mark scheme unlocked"); } return true; }
+  catch(e){ if(!quiet) $("msMsg").textContent="That code is not correct. Check it with your teacher."; return false; }
+}
+$("msBtn").addEventListener("click",()=>{
+  if(!state.submitted){ $("msMsg").textContent="Submit your answers first, then enter the code."; return; }
+  tryUnlock($("msCode").value,false);
+});
+$("msCode").addEventListener("keydown",e=>{ if(e.key==="Enter") $("msBtn").click(); });
+$("resetBtn").addEventListener("click",()=>{
+  if(!confirmInline("reset","Click again to clear every answer and mark and start a new attempt.")) return;
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  location.reload();
+});
+$("feedback").value=state.feedback||"";
+$("feedback").addEventListener("input",e=>{ state.feedback=e.target.value; save(); });
+
+/* ===================== HEADER FIELDS & TIMER ===================== */
+$("studentName").value=state.name; $("studentClass").value=state.cls;
+$("studentName").addEventListener("input",e=>{state.name=e.target.value;save();});
+$("studentClass").addEventListener("input",e=>{state.cls=e.target.value;save();});
+let timerOn=false, tick=null;
+function fmt(s){ return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`; }
+function paintTimer(){ $("timerTxt").textContent=fmt(state.timer); $("timerBtn").classList.toggle("low",state.timer<=600); }
+paintTimer();
+$("timerBtn").addEventListener("click",()=>{
+  timerOn=!timerOn;
+  if(timerOn){ tick=setInterval(()=>{ if(state.timer>0){ state.timer--; paintTimer(); if(state.timer%15===0) save(); } else { clearInterval(tick); timerOn=false; toast("Time is up."); } },1000); toast("Timer started"); }
+  else { clearInterval(tick); save(); toast("Timer paused"); }
+});
+
+/* ===================== EXPORT ===================== */
+function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function hasMark(id){ return state.marks[id]!==undefined && state.marks[id]!==""; }
+function plainText(){
+  let o=`Cobalt Chloride Equilibrium Lab: MYP Criteria B & C\nName: ${state.name}\nClass: ${state.cls}\n\n`;
+  Q.forEach(q=>{
+    o+=`${q.id} [${q.max}]`+(hasMark(q.id)?`  Marks: ${state.marks[q.id]}/${q.max}`:"")+"\n";
+    if(q.widget==="table"){ o+=state.table.head.map(h=>h||"-").join(" | ")+"\n"; state.table.rows.filter(r=>r.some(v=>String(v).trim())).forEach(r=>o+=r.join(" | ")+"\n"); }
+    else if(q.widget==="graph"){ o+=`x-axis: ${state.graph.x}\ny-axis: ${state.graph.y}\nBest fit: ${state.graph.fit}\n`; }
+    else o+=(state.answers[q.id]||"(no answer)")+"\n";
+    o+="\n";
+  });
+  if(MS) o+=`Criterion B: ${$("sumB").textContent}/16 (${$("lvlB").textContent})\nCriterion C: ${$("sumC").textContent}/16 (${$("lvlC").textContent})\n`;
+  if(state.feedback) o+=`\nFeedback: ${state.feedback}\n`;
+  return o;
+}
+function reportNode(){
+  const img = $("graph") ? $("graph").toDataURL("image/png") : "";
+  const rows=state.table.rows.filter(r=>r.some(v=>String(v).trim())).map(r=>`<tr>${r.map(v=>`<td>${esc(v)}</td>`).join("")}</tr>`).join("");
+  const when = state.submittedAt ? new Date(state.submittedAt).toLocaleString() : new Date().toLocaleString();
+  const marked = MS && Q.some(q=>hasMark(q.id));
+  const qs=Q.map(q=>{
+    let body;
+    if(q.widget==="table") body=`<table class="r-t"><tr>${state.table.head.map((h,i)=>`<th>${esc(h||["(no heading)","Trial 1","Trial 2","Trial 3","Mean"][i])}</th>`).join("")}</tr>${rows||'<tr><td colspan="5">(no data)</td></tr>'}</table>`;
+    else if(q.widget==="graph") body=img?`<img src="${img}" alt="Graph" style="width:100%;border:1px solid #d8deea;border-radius:6px">`:"";
+    else body=`<div class="r-a">${esc(state.answers[q.id]||"(no answer)")}</div>`;
+    const mk=hasMark(q.id)?`<span class="r-mk">${state.marks[q.id]} / ${q.max}</span>`:`<span class="r-mk">[${q.max}]</span>`;
+    return `<div class="r-q"><div class="r-h"><b>${q.id}</b>${mk}</div><div class="r-p">${q.text}</div>${body}</div>`;
+  });
+  const bQ=qs.slice(0,5).join(""), cQ=qs.slice(5).join("");
+  const el=document.createElement("div");
+  el.innerHTML=`<style>
+    .rep{font-family:Arial,Helvetica,sans-serif;color:#16203a;font-size:12px;line-height:1.5;background:#fff;width:720px;padding:6px 10px}
+    .rep h1{font-size:20px;margin:0 0 2px;color:#16203a}.rep .sub{color:#5a6580;font-size:11px;margin-bottom:10px}
+    .rep .meta{display:flex;gap:18px;border:1px solid #d8deea;border-radius:6px;padding:8px 10px;margin-bottom:12px}
+    .rep h2{font-size:14px;color:#2448c9;border-bottom:2px solid #2448c9;padding-bottom:3px;margin:14px 0 6px}
+    .r-q{border-bottom:1px solid #e3e7f0;padding:8px 0;page-break-inside:avoid;break-inside:avoid}
+    .r-h{display:flex;justify-content:space-between;color:#2448c9}.r-mk{font-family:monospace;color:#16203a}
+    .r-p p{margin:2px 0 4px;color:#5a6580}.r-a{white-space:pre-wrap;background:#f6f7fb;border-radius:4px;padding:6px 8px}
+    .r-t{border-collapse:collapse;width:100%}.r-t td,.r-t th{border:1px solid #c9d0e0;padding:3px 6px;text-align:center}
+    .r-t th{background:#eef1fa}
+  </style>
+  <div class="rep">
+    <h1>Cobalt Chloride Equilibrium Lab</h1>
+    <div class="sub">MYP Sciences · Criteria B &amp; C practice · Submitted ${esc(when)}</div>
+    <div class="meta"><span><b>Name:</b> ${esc(state.name||"—")}</span><span><b>Class:</b> ${esc(state.cls||"—")}</span>
+      ${marked?`<span><b>B:</b> ${$("sumB").textContent}/16 (${$("lvlB").textContent})</span><span><b>C:</b> ${$("sumC").textContent}/16 (${$("lvlC").textContent})</span>`:""}</div>
+    <h2>Criterion B · Inquiring and designing</h2>${bQ}
+    <h2>Criterion C · Processing and evaluating</h2>${cQ}
+    ${state.feedback?`<h2>Feedback and target</h2><div class="r-a">${esc(state.feedback)}</div>`:""}
+  </div>`;
+  return el;
+}
+function fileBase(){ return "equilibrium-lab-"+((state.name||"student").trim().replace(/[^\w-]+/g,"-").toLowerCase()||"student"); }
+let downloads=null, dlChecked=false;
+(async()=>{ try{ if(window.claude && claude.use){ downloads = await claude.use("downloads"); } }catch(e){} dlChecked=true; })();
+async function saveFile(filename, blob){
+  if(downloads){
+    try{ await downloads.save({filename,data:blob}); toast("Saved "+filename); return true; }
+    catch(e){ if(e&&e.code==="declined"){ toast("Download cancelled"); return false; } if(e&&e.code==="rate_limited"){ toast("Please wait a moment, then try again"); return false; } }
+  }
+  try{ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},4000); return true; }
+  catch(e){ return false; }
+}
+$("pdfBtn").addEventListener("click",async()=>{
+  if(typeof html2pdf==="undefined"){ $("pdfMsg").textContent="The PDF maker did not load. Check your internet connection and reload, or use Copy answers as text."; return; }
+  const btn=$("pdfBtn"); btn.disabled=true; btn.textContent="Making your PDF…";
+  const host=document.createElement("div"); host.style.cssText="position:fixed;left:-10000px;top:0;background:#fff";
+  host.appendChild(reportNode()); document.body.appendChild(host);
+  try{
+    const blob = await html2pdf().set({margin:[10,10,12,10], image:{type:"jpeg",quality:0.95}, html2canvas:{scale:2,backgroundColor:"#ffffff",useCORS:true}, jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}, pagebreak:{mode:["css","legacy"],avoid:".r-q"}}).from(host.firstChild).outputPdf("blob");
+    const ok = await saveFile(fileBase()+(MS?"-marked":"")+".pdf", blob);
+    $("pdfMsg").textContent = ok ? "If no file appeared, check your Downloads folder. Send the PDF to your teacher." : "The download did not start. Use Copy answers as text instead.";
+  }catch(e){ $("pdfMsg").textContent="Could not make the PDF. Use Copy answers as text instead."; }
+  finally{ host.remove(); btn.disabled=false; btn.textContent=MS?"Download my marked PDF":"Download my answers (PDF)"; }
+});
+$("copyText").addEventListener("click",async()=>{ try{ await navigator.clipboard.writeText(plainText()); toast("Answers copied. Paste them into a document."); }catch(e){ toast("Copy was blocked. Select and copy your answers manually."); } });
+
+/* ===================== TOAST & INIT ===================== */
+let tt=null; function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("on"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("on"),2600); }
+renderQuestions(); applyLock(); updateTotals(); requestAnimationFrame(step);
+if(state.msCode){ tryUnlock(state.msCode,true).then(ok=>{ if(ok) $("pdfBtn").textContent="Download my marked PDF"; }); }
+</script>
+</body>
+</html>
